@@ -1,0 +1,567 @@
+{
+  "total_tweets_raw": 75682,
+  "total_tweets_clean": 62919,
+  "num_entities": 32,
+  "sentiment_counts": {
+    "Positive": 16811,
+    "Negative": 19183,
+    "Neutral": 15796,
+    "Irrelevant": 11129
+  },
+  "sentiment_pct": {
+    "Positive": 26.72,
+    "Negative": 30.49,
+    "Neutral": 25.11,
+    "Irrelevant": 17.69
+  },
+  "top_entities": {
+    "johnson&johnson": 2099,
+    "Microsoft": 2095,
+    "Facebook": 2086,
+    "Verizon": 2082,
+    "CallOfDuty": 2031,
+    "MaddenNFL": 2030,
+    "TomClancysRainbowSix": 2026,
+    "Amazon": 2015,
+    "WorldOfCraft": 2008,
+    "Battlefield": 2003,
+    "Google": 2000,
+    "TomClancysGhostRecon": 1993,
+    "FIFA": 1986,
+    "Borderlands": 1980,
+    "NBA2K": 1980
+  },
+  "entity_sentiment_heatmap": {
+    "entities": [
+      "johnson&johnson",
+      "Microsoft",
+      "Facebook",
+      "Verizon",
+      "CallOfDuty",
+      "MaddenNFL",
+      "TomClancysRainbowSix",
+      "Amazon",
+      "WorldOfCraft",
+      "Battlefield",
+      "Google",
+      "TomClancysGhostRecon",
+      "FIFA",
+      "Borderlands",
+      "NBA2K"
+    ],
+    "sentiments": [
+      "Positive",
+      "Negative",
+      "Neutral",
+      "Irrelevant"
+    ],
+    "matrix": [
+      [
+        11.15,
+        35.160000000000004,
+        45.69,
+        8.0
+      ],
+      [
+        24.34,
+        32.17,
+        36.42,
+        7.06
+      ],
+      [
+        6.09,
+        29.909999999999997,
+        34.949999999999996,
+        29.049999999999997
+      ],
+      [
+        22.38,
+        45.73,
+        24.45,
+        7.4399999999999995
+      ],
+      [
+        17.87,
+        37.32,
+        16.89,
+        27.92
+      ],
+      [
+        15.620000000000001,
+        72.91,
+        8.18,
+        3.3000000000000003
+      ],
+      [
+        20.73,
+        49.61,
+        25.81,
+        3.85
+      ],
+      [
+        13.0,
+        25.11,
+        53.5,
+        8.39
+      ],
+      [
+        30.930000000000003,
+        14.540000000000001,
+        44.72,
+        9.81
+      ],
+      [
+        23.07,
+        19.919999999999998,
+        14.580000000000002,
+        42.44
+      ],
+      [
+        14.299999999999999,
+        25.8,
+        36.449999999999996,
+        23.45
+      ],
+      [
+        25.840000000000003,
+        40.89,
+        32.21,
+        1.05
+      ],
+      [
+        20.9,
+        49.8,
+        4.53,
+        24.77
+      ],
+      [
+        43.28,
+        19.34,
+        26.57,
+        10.81
+      ],
+      [
+        15.909999999999998,
+        64.7,
+        11.52,
+        7.88
+      ]
+    ]
+  },
+  "avg_word_count_by_sentiment": {
+    "Positive": 10.18,
+    "Negative": 11.27,
+    "Neutral": 11.76,
+    "Irrelevant": 11.05
+  },
+  "top_words_by_sentiment": {
+    "Positive": [
+      {
+        "text": "game",
+        "count": 2992
+      },
+      {
+        "text": "love",
+        "count": 1536
+      },
+      {
+        "text": "good",
+        "count": 1407
+      },
+      {
+        "text": "like",
+        "count": 1253
+      },
+      {
+        "text": "really",
+        "count": 1212
+      },
+      {
+        "text": "new",
+        "count": 1103
+      },
+      {
+        "text": "play",
+        "count": 1022
+      },
+      {
+        "text": "time",
+        "count": 1007
+      },
+      {
+        "text": "one",
+        "count": 1002
+      },
+      {
+        "text": "best",
+        "count": 987
+      },
+      {
+        "text": "get",
+        "count": 903
+      },
+      {
+        "text": "great",
+        "count": 900
+      },
+      {
+        "text": "playing",
+        "count": 855
+      },
+      {
+        "text": "fun",
+        "count": 825
+      },
+      {
+        "text": "year",
+        "count": 714
+      },
+      {
+        "text": "look",
+        "count": 706
+      },
+      {
+        "text": "wait",
+        "count": 694
+      },
+      {
+        "text": "day",
+        "count": 671
+      },
+      {
+        "text": "red",
+        "count": 647
+      },
+      {
+        "text": "see",
+        "count": 642
+      },
+      {
+        "text": "still",
+        "count": 638
+      },
+      {
+        "text": "thank",
+        "count": 635
+      },
+      {
+        "text": "much",
+        "count": 634
+      },
+      {
+        "text": "dead",
+        "count": 626
+      },
+      {
+        "text": "creed",
+        "count": 618
+      }
+    ],
+    "Negative": [
+      {
+        "text": "game",
+        "count": 4630
+      },
+      {
+        "text": "get",
+        "count": 1747
+      },
+      {
+        "text": "like",
+        "count": 1545
+      },
+      {
+        "text": "shit",
+        "count": 1313
+      },
+      {
+        "text": "fix",
+        "count": 1260
+      },
+      {
+        "text": "play",
+        "count": 1184
+      },
+      {
+        "text": "please",
+        "count": 1058
+      },
+      {
+        "text": "time",
+        "count": 1025
+      },
+      {
+        "text": "one",
+        "count": 1004
+      },
+      {
+        "text": "fuck",
+        "count": 1003
+      },
+      {
+        "text": "fucking",
+        "count": 999
+      },
+      {
+        "text": "still",
+        "count": 998
+      },
+      {
+        "text": "even",
+        "count": 957
+      },
+      {
+        "text": "really",
+        "count": 939
+      },
+      {
+        "text": "people",
+        "count": 934
+      },
+      {
+        "text": "cant",
+        "count": 921
+      },
+      {
+        "text": "make",
+        "count": 902
+      },
+      {
+        "text": "dont",
+        "count": 850
+      },
+      {
+        "text": "year",
+        "count": 842
+      },
+      {
+        "text": "fifa",
+        "count": 798
+      },
+      {
+        "text": "got",
+        "count": 794
+      },
+      {
+        "text": "new",
+        "count": 750
+      },
+      {
+        "text": "server",
+        "count": 736
+      },
+      {
+        "text": "johnson",
+        "count": 720
+      },
+      {
+        "text": "going",
+        "count": 665
+      }
+    ],
+    "Neutral": [
+      {
+        "text": "johnson",
+        "count": 1765
+      },
+      {
+        "text": "game",
+        "count": 1591
+      },
+      {
+        "text": "amazon",
+        "count": 1053
+      },
+      {
+        "text": "get",
+        "count": 990
+      },
+      {
+        "text": "like",
+        "count": 917
+      },
+      {
+        "text": "one",
+        "count": 841
+      },
+      {
+        "text": "new",
+        "count": 821
+      },
+      {
+        "text": "play",
+        "count": 802
+      },
+      {
+        "text": "google",
+        "count": 802
+      },
+      {
+        "text": "facebook",
+        "count": 786
+      },
+      {
+        "text": "microsoft",
+        "count": 669
+      },
+      {
+        "text": "com",
+        "count": 667
+      },
+      {
+        "text": "good",
+        "count": 660
+      },
+      {
+        "text": "dead",
+        "count": 622
+      },
+      {
+        "text": "time",
+        "count": 609
+      },
+      {
+        "text": "people",
+        "count": 600
+      },
+      {
+        "text": "see",
+        "count": 598
+      },
+      {
+        "text": "red",
+        "count": 598
+      },
+      {
+        "text": "xbox",
+        "count": 582
+      },
+      {
+        "text": "day",
+        "count": 564
+      },
+      {
+        "text": "nvidia",
+        "count": 563
+      },
+      {
+        "text": "video",
+        "count": 533
+      },
+      {
+        "text": "best",
+        "count": 528
+      },
+      {
+        "text": "great",
+        "count": 524
+      },
+      {
+        "text": "love",
+        "count": 486
+      }
+    ],
+    "Irrelevant": [
+      {
+        "text": "player",
+        "count": 1092
+      },
+      {
+        "text": "game",
+        "count": 1064
+      },
+      {
+        "text": "like",
+        "count": 952
+      },
+      {
+        "text": "see",
+        "count": 914
+      },
+      {
+        "text": "ban",
+        "count": 729
+      },
+      {
+        "text": "people",
+        "count": 704
+      },
+      {
+        "text": "one",
+        "count": 669
+      },
+      {
+        "text": "love",
+        "count": 637
+      },
+      {
+        "text": "good",
+        "count": 611
+      },
+      {
+        "text": "best",
+        "count": 548
+      },
+      {
+        "text": "battlefield",
+        "count": 525
+      },
+      {
+        "text": "get",
+        "count": 522
+      },
+      {
+        "text": "really",
+        "count": 512
+      },
+      {
+        "text": "time",
+        "count": 454
+      },
+      {
+        "text": "shit",
+        "count": 445
+      },
+      {
+        "text": "detail",
+        "count": 440
+      },
+      {
+        "text": "great",
+        "count": 431
+      },
+      {
+        "text": "even",
+        "count": 430
+      },
+      {
+        "text": "team",
+        "count": 410
+      },
+      {
+        "text": "got",
+        "count": 408
+      },
+      {
+        "text": "gta",
+        "count": 405
+      },
+      {
+        "text": "pubg",
+        "count": 400
+      },
+      {
+        "text": "overwatch",
+        "count": 390
+      },
+      {
+        "text": "guy",
+        "count": 388
+      },
+      {
+        "text": "would",
+        "count": 383
+      }
+    ]
+  }
+}

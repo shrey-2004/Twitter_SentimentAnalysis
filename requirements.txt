@@ -1,0 +1,9 @@
+pandas>=1.5
+numpy>=1.23
+scikit-learn>=1.2
+
+# optional — enables stopword removal via NLTK's corpus and WordNet
+# lemmatisation. If not installed (or offline), the script automatically
+# falls back to scikit-learn's built-in stopword list and skips
+# lemmatisation, so the pipeline still runs end to end.
+nltk>=3.8

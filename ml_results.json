@@ -1,0 +1,108 @@
+{
+  "models": {
+    "Logistic Regression": {
+      "accuracy": 0.8318,
+      "precision": 0.8356,
+      "recall": 0.8318,
+      "f1_score": 0.8314,
+      "confusion_matrix": [
+        [
+          237,
+          18,
+          10,
+          12
+        ],
+        [
+          14,
+          239,
+          7,
+          5
+        ],
+        [
+          18,
+          26,
+          229,
+          12
+        ],
+        [
+          19,
+          20,
+          7,
+          126
+        ]
+      ]
+    },
+    "Multinomial Naive Bayes": {
+      "accuracy": 0.7317,
+      "precision": 0.7448,
+      "recall": 0.7317,
+      "f1_score": 0.7283,
+      "confusion_matrix": [
+        [
+          232,
+          24,
+          14,
+          7
+        ],
+        [
+          23,
+          220,
+          18,
+          4
+        ],
+        [
+          29,
+          58,
+          183,
+          15
+        ],
+        [
+          32,
+          34,
+          10,
+          96
+        ]
+      ]
+    },
+    "Linear SVM": {
+      "accuracy": 0.8759,
+      "precision": 0.8771,
+      "recall": 0.8759,
+      "f1_score": 0.8757,
+      "confusion_matrix": [
+        [
+          243,
+          14,
+          10,
+          10
+        ],
+        [
+          10,
+          247,
+          3,
+          5
+        ],
+        [
+          19,
+          12,
+          245,
+          9
+        ],
+        [
+          12,
+          13,
+          7,
+          140
+        ]
+      ]
+    }
+  },
+  "labels": [
+    "Positive",
+    "Negative",
+    "Neutral",
+    "Irrelevant"
+  ],
+  "vocab_size": 8000,
+  "best_model": "Linear SVM"
+}

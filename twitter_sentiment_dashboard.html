@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Twitter Sentiment — Signal Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --bg:#0E1420;
+    --bg-alt:#111927;
+    --surface:#161F2E;
+    --surface-2:#1C2738;
+    --border:#28344A;
+    --text:#E7ECF2;
+    --text-dim:#8FA0B5;
+    --text-faint:#5D6E85;
+    --teal:#3DDBC8;
+    --gold:#F2B84B;
+    --positive:#39C08A;
+    --negative:#E2604B;
+    --neutral:#E2B23A;
+    --irrelevant:#6C7C93;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:0 28px 80px;}
+  h1,h2,h3{font-family:'Space Grotesk', sans-serif;margin:0;letter-spacing:.2px;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  /* ---- masthead ---- */
+  .masthead{
+    padding:36px 0 20px;
+    border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;
+  }
+  .masthead .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);
+    margin-bottom:8px;
+  }
+  .masthead h1{font-size:32px;font-weight:700;color:var(--text);}
+  .masthead .sub{color:var(--text-dim);font-size:14px;margin-top:6px;}
+  .masthead .stamp{
+    font-family:'IBM Plex Mono', monospace;font-size:12px;color:var(--text-faint);
+    text-align:right;
+  }
+
+  /* ---- ticker (signature element) ---- */
+  .ticker-outer{
+    border-bottom:1px solid var(--border);
+    background:var(--bg-alt);
+    overflow:hidden;
+    white-space:nowrap;
+    position:relative;
+  }
+  .ticker-outer::before, .ticker-outer::after{
+    content:"";position:absolute;top:0;bottom:0;width:60px;z-index:2;pointer-events:none;
+  }
+  .ticker-outer::before{left:0;background:linear-gradient(90deg, var(--bg-alt), transparent);}
+  .ticker-outer::after{right:0;background:linear-gradient(270deg, var(--bg-alt), transparent);}
+  .ticker-track{
+    display:inline-flex;
+    align-items:center;
+    animation:scrollTicker 55s linear infinite;
+    padding:10px 0;
+  }
+  .ticker-outer:hover .ticker-track{animation-play-state:paused;}
+  @keyframes scrollTicker{
+    0%{transform:translateX(0);}
+    100%{transform:translateX(-50%);}
+  }
+  .tick{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:0 22px;border-right:1px solid var(--border);
+    font-family:'IBM Plex Mono', monospace;font-size:12.5px;color:var(--text-dim);
+  }
+  .tick b{color:var(--text);font-weight:500;}
+  .tick .bar{
+    display:inline-flex;width:70px;height:7px;border-radius:2px;overflow:hidden;background:var(--surface-2);
+  }
+  .tick .seg{height:100%;display:inline-block;}
+
+  /* ---- layout ---- */
+  section{padding:40px 0 0;}
+  .section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;flex-wrap:wrap;gap:8px;}
+  .section-head h2{font-size:18px;font-weight:600;}
+  .section-head .note{font-size:12.5px;color:var(--text-faint);font-family:'IBM Plex Mono', monospace;}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px;}
+  .kpi{
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    padding:18px 20px;
+  }
+  .kpi .label{font-size:11.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-faint);font-family:'IBM Plex Mono', monospace;}
+  .kpi .value{font-family:'IBM Plex Mono', monospace;font-size:28px;font-weight:600;color:var(--text);margin-top:8px;}
+  .kpi .value.teal{color:var(--teal);}
+  .kpi .value.gold{color:var(--gold);}
+
+  .grid-2{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;
+  }
+  .card h3{font-size:13.5px;font-weight:500;color:var(--text-dim);margin-bottom:16px;
+    text-transform:uppercase;letter-spacing:1px;font-family:'IBM Plex Mono', monospace;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px;font-size:12.5px;color:var(--text-dim);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:9px;height:9px;border-radius:2px;display:inline-block;}
+
+  /* heatmap */
+  .heatmap{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .heatmap th{
+    font-family:'IBM Plex Mono', monospace;font-weight:500;color:var(--text-faint);
+    font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;text-align:center;
+  }
+  .heatmap th:first-child{text-align:left;}
+  .heatmap td{padding:6px 8px;text-align:center;font-family:'IBM Plex Mono', monospace;color:var(--text);}
+  .heatmap td.entity{text-align:left;color:var(--text-dim);font-family:'IBM Plex Sans', sans-serif;}
+  .heatmap .cell{border-radius:4px;display:block;padding:5px 0;}
+
+  /* word cloud */
+  .cloud-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .cloud-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;}
+  .cloud-panel .tag-title{
+    font-family:'IBM Plex Mono', monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;
+    margin-bottom:12px;
+  }
+  .cloud-tags{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:baseline;}
+  .cloud-tags span{font-family:'Space Grotesk', sans-serif;line-height:1;}
+
+  /* confusion matrix */
+  .cm-table{border-collapse:collapse;width:100%;font-size:12.5px;font-family:'IBM Plex Mono', monospace;}
+  .cm-table th, .cm-table td{padding:8px;text-align:center;}
+  .cm-table th{color:var(--text-faint);font-weight:500;font-size:11px;text-transform:uppercase;}
+  .cm-table td.diag{font-weight:600;}
+  .cm-table td.rowhead{text-align:left;color:var(--text-dim);font-family:'IBM Plex Sans', sans-serif;}
+
+  .model-badge{
+    display:inline-block;font-family:'IBM Plex Mono', monospace;font-size:11px;
+    padding:3px 10px;border-radius:12px;border:1px solid var(--teal);color:var(--teal);
+  }
+
+  footer{
+    margin-top:60px;padding:22px 0;border-top:1px solid var(--border);
+    color:var(--text-faint);font-size:12px;font-family:'IBM Plex Mono', monospace;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+
+  @media(max-width:860px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .grid-2, .grid-3{grid-template-columns:1fr;}
+    .cloud-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">Signal Desk // Brand &amp; Gaming Sentiment</div>
+      <h1>Twitter sentiment — executive dashboard</h1>
+      <div class="sub" id="subhead">Cleaned, lemmatised, and classified across brand and gaming mentions.</div>
+    </div>
+    <div class="stamp" id="stamp"></div>
+  </div>
+</div>
+
+<div class="ticker-outer">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<div class="wrap">
+
+  <section>
+    <div class="kpi-grid" id="kpiGrid"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Overall sentiment mix</h2>
+      <span class="note">share of cleaned tweets</span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Sentiment distribution</h3>
+        <div class="legend" id="sentimentLegend"></div>
+        <div style="position:relative;height:260px;">
+          <canvas id="sentimentDonut" role="img" aria-label="Donut chart of overall sentiment distribution"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Avg. tokens per tweet, by sentiment</h3>
+        <div style="position:relative;height:260px;">
+          <canvas id="wordCountBar" role="img" aria-label="Bar chart of average cleaned word count per sentiment class"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Sentiment by brand / topic</h2>
+      <span class="note">top entities by tweet volume · row % </span>
+    </div>
+    <div class="card">
+      <div class="legend" id="heatmapLegend"></div>
+      <div style="overflow-x:auto;">
+        <table class="heatmap" id="heatmapTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Volume leaders</h2>
+      <span class="note">tweets captured per entity</span>
+    </div>
+    <div class="card">
+      <div style="position:relative;height:340px;">
+        <canvas id="volumeBar" role="img" aria-label="Horizontal bar chart of tweet volume by top entities"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>What people are actually saying</h2>
+      <span class="note">top terms per sentiment, sized by frequency</span>
+    </div>
+    <div class="cloud-grid" id="cloudGrid"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Model bake-off</h2>
+      <span class="note" id="mlNote">TF-IDF features → three classifiers, scored on the held-out validation set</span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Accuracy · precision · recall · F1</h3>
+        <div style="position:relative;height:280px;">
+          <canvas id="modelBar" role="img" aria-label="Grouped bar chart comparing accuracy, precision, recall and F1 across three models"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Confusion matrix — best model <span class="model-badge" id="bestModelBadge"></span></h3>
+        <div style="overflow-x:auto;">
+          <table class="cm-table" id="cmTable"></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Twitter Sentiment Analysis · generated pipeline output</span>
+    <span id="footNote"></span>
+  </footer>
+
+</div>
+
+<script>
+const DATA = {"stats": {"total_tweets_raw": 75682, "total_tweets_clean": 62919, "num_entities": 32, "sentiment_counts": {"Positive": 16811, "Negative": 19183, "Neutral": 15796, "Irrelevant": 11129}, "sentiment_pct": {"Positive": 26.72, "Negative": 30.49, "Neutral": 25.11, "Irrelevant": 17.69}, "top_entities": {"johnson&johnson": 2099, "Microsoft": 2095, "Facebook": 2086, "Verizon": 2082, "CallOfDuty": 2031, "MaddenNFL": 2030, "TomClancysRainbowSix": 2026, "Amazon": 2015, "WorldOfCraft": 2008, "Battlefield": 2003, "Google": 2000, "TomClancysGhostRecon": 1993, "FIFA": 1986, "Borderlands": 1980, "NBA2K": 1980}, "entity_sentiment_heatmap": {"entities": ["johnson&johnson", "Microsoft", "Facebook", "Verizon", "CallOfDuty", "MaddenNFL", "TomClancysRainbowSix", "Amazon", "WorldOfCraft", "Battlefield", "Google", "TomClancysGhostRecon", "FIFA", "Borderlands", "NBA2K"], "sentiments": ["Positive", "Negative", "Neutral", "Irrelevant"], "matrix": [[11.15, 35.160000000000004, 45.69, 8.0], [24.34, 32.17, 36.42, 7.06], [6.09, 29.909999999999997, 34.949999999999996, 29.049999999999997], [22.38, 45.73, 24.45, 7.4399999999999995], [17.87, 37.32, 16.89, 27.92], [15.620000000000001, 72.91, 8.18, 3.3000000000000003], [20.73, 49.61, 25.81, 3.85], [13.0, 25.11, 53.5, 8.39], [30.930000000000003, 14.540000000000001, 44.72, 9.81], [23.07, 19.919999999999998, 14.580000000000002, 42.44], [14.299999999999999, 25.8, 36.449999999999996, 23.45], [25.840000000000003, 40.89, 32.21, 1.05], [20.9, 49.8, 4.53, 24.77], [43.28, 19.34, 26.57, 10.81], [15.909999999999998, 64.7, 11.52, 7.88]]}, "avg_word_count_by_sentiment": {"Positive": 10.18, "Negative": 11.27, "Neutral": 11.76, "Irrelevant": 11.05}, "top_words_by_sentiment": {"Positive": [{"text": "game", "count": 2992}, {"text": "love", "count": 1536}, {"text": "good", "count": 1407}, {"text": "like", "count": 1253}, {"text": "really", "count": 1212}, {"text": "new", "count": 1103}, {"text": "play", "count": 1022}, {"text": "time", "count": 1007}, {"text": "one", "count": 1002}, {"text": "best", "count": 987}, {"text": "get", "count": 903}, {"text": "great", "count": 900}, {"text": "playing", "count": 855}, {"text": "fun", "count": 825}, {"text": "year", "count": 714}, {"text": "look", "count": 706}, {"text": "wait", "count": 694}, {"text": "day", "count": 671}, {"text": "red", "count": 647}, {"text": "see", "count": 642}, {"text": "still", "count": 638}, {"text": "thank", "count": 635}, {"text": "much", "count": 634}, {"text": "dead", "count": 626}, {"text": "creed", "count": 618}], "Negative": [{"text": "game", "count": 4630}, {"text": "get", "count": 1747}, {"text": "like", "count": 1545}, {"text": "shit", "count": 1313}, {"text": "fix", "count": 1260}, {"text": "play", "count": 1184}, {"text": "please", "count": 1058}, {"text": "time", "count": 1025}, {"text": "one", "count": 1004}, {"text": "fuck", "count": 1003}, {"text": "fucking", "count": 999}, {"text": "still", "count": 998}, {"text": "even", "count": 957}, {"text": "really", "count": 939}, {"text": "people", "count": 934}, {"text": "cant", "count": 921}, {"text": "make", "count": 902}, {"text": "dont", "count": 850}, {"text": "year", "count": 842}, {"text": "fifa", "count": 798}, {"text": "got", "count": 794}, {"text": "new", "count": 750}, {"text": "server", "count": 736}, {"text": "johnson", "count": 720}, {"text": "going", "count": 665}], "Neutral": [{"text": "johnson", "count": 1765}, {"text": "game", "count": 1591}, {"text": "amazon", "count": 1053}, {"text": "get", "count": 990}, {"text": "like", "count": 917}, {"text": "one", "count": 841}, {"text": "new", "count": 821}, {"text": "play", "count": 802}, {"text": "google", "count": 802}, {"text": "facebook", "count": 786}, {"text": "microsoft", "count": 669}, {"text": "com", "count": 667}, {"text": "good", "count": 660}, {"text": "dead", "count": 622}, {"text": "time", "count": 609}, {"text": "people", "count": 600}, {"text": "see", "count": 598}, {"text": "red", "count": 598}, {"text": "xbox", "count": 582}, {"text": "day", "count": 564}, {"text": "nvidia", "count": 563}, {"text": "video", "count": 533}, {"text": "best", "count": 528}, {"text": "great", "count": 524}, {"text": "love", "count": 486}], "Irrelevant": [{"text": "player", "count": 1092}, {"text": "game", "count": 1064}, {"text": "like", "count": 952}, {"text": "see", "count": 914}, {"text": "ban", "count": 729}, {"text": "people", "count": 704}, {"text": "one", "count": 669}, {"text": "love", "count": 637}, {"text": "good", "count": 611}, {"text": "best", "count": 548}, {"text": "battlefield", "count": 525}, {"text": "get", "count": 522}, {"text": "really", "count": 512}, {"text": "time", "count": 454}, {"text": "shit", "count": 445}, {"text": "detail", "count": 440}, {"text": "great", "count": 431}, {"text": "even", "count": 430}, {"text": "team", "count": 410}, {"text": "got", "count": 408}, {"text": "gta", "count": 405}, {"text": "pubg", "count": 400}, {"text": "overwatch", "count": 390}, {"text": "guy", "count": 388}, {"text": "would", "count": 383}]}}, "ml": {"models": {"Logistic Regression": {"accuracy": 0.8318, "precision": 0.8356, "recall": 0.8318, "f1_score": 0.8314, "confusion_matrix": [[237, 18, 10, 12], [14, 239, 7, 5], [18, 26, 229, 12], [19, 20, 7, 126]]}, "Multinomial Naive Bayes": {"accuracy": 0.7317, "precision": 0.7448, "recall": 0.7317, "f1_score": 0.7283, "confusion_matrix": [[232, 24, 14, 7], [23, 220, 18, 4], [29, 58, 183, 15], [32, 34, 10, 96]]}, "Linear SVM": {"accuracy": 0.8759, "precision": 0.8771, "recall": 0.8759, "f1_score": 0.8757, "confusion_matrix": [[243, 14, 10, 10], [10, 247, 3, 5], [19, 12, 245, 9], [12, 13, 7, 140]]}}, "labels": ["Positive", "Negative", "Neutral", "Irrelevant"], "vocab_size": 8000, "best_model": "Linear SVM"}};
+const stats = DATA.stats;
+const ml = DATA.ml;
+
+const SENTIMENT_COLORS = {
+  Positive: getComputedStyle(document.documentElement).getPropertyValue('--positive').trim(),
+  Negative: getComputedStyle(document.documentElement).getPropertyValue('--negative').trim(),
+  Neutral: getComputedStyle(document.documentElement).getPropertyValue('--neutral').trim(),
+  Irrelevant: getComputedStyle(document.documentElement).getPropertyValue('--irrelevant').trim(),
+};
+const SENTIMENTS = ["Positive","Negative","Neutral","Irrelevant"];
+const TEXT_DIM = '#8FA0B5';
+const GRID_COLOR = 'rgba(255,255,255,0.06)';
+
+Chart.defaults.color = TEXT_DIM;
+Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+Chart.defaults.font.size = 12;
+
+function fmt(n){ return Number(n).toLocaleString(); }
+function pct(n){ return Number(n).toFixed(1) + '%'; }
+
+// ---- stamp / subhead ----
+document.getElementById('stamp').innerHTML =
+  `RAW ${fmt(stats.total_tweets_raw)} tweets<br>CLEAN ${fmt(stats.total_tweets_clean)} tweets`;
+document.getElementById('subhead').textContent =
+  `${stats.num_entities} tracked entities · best model ${ml.best_model} (${pct(ml.models[ml.best_model].accuracy*100)} accuracy)`;
+document.getElementById('footNote').textContent =
+  `${ml.vocab_size.toLocaleString()} TF-IDF terms · classes: ${SENTIMENTS.join(', ')}`;
+
+// ---- ticker ----
+(function buildTicker(){
+  const entities = Object.keys(stats.top_entities);
+  const heat = stats.entity_sentiment_heatmap;
+  const rows = entities.map(e => {
+    const idx = heat.entities.indexOf(e);
+    const row = idx >= 0 ? heat.matrix[idx] : [25,25,25,25];
+    return { e, row, vol: stats.top_entities[e] };
+  });
+  function segHtml(row){
+    return row.map((v,i)=>`<span class="seg" style="width:${v}%;background:${SENTIMENT_COLORS[SENTIMENTS[i]]}"></span>`).join('');
+  }
+  const items = rows.map(r => `<span class="tick"><b>${r.e}</b><span class="bar">${segHtml(r.row)}</span>${fmt(r.vol)}</span>`).join('');
+  document.getElementById('ticker').innerHTML = items + items; // duplicate for seamless loop
+})();
+
+// ---- KPI cards ----
+(function buildKpis(){
+  const best = ml.models[ml.best_model];
+  const posShare = stats.sentiment_pct['Positive'] || 0;
+  const negShare = stats.sentiment_pct['Negative'] || 0;
+  const cards = [
+    { label:'Tweets analysed', value: fmt(stats.total_tweets_clean), cls:'' },
+    { label:'Entities tracked', value: fmt(stats.num_entities), cls:'' },
+    { label:'Positive / Negative split', value: `${posShare.toFixed(0)}% / ${negShare.toFixed(0)}%`, cls:'gold' },
+    { label:`Best model (${ml.best_model})`, value: pct(best.accuracy*100) + ' acc', cls:'teal' },
+  ];
+  document.getElementById('kpiGrid').innerHTML = cards.map(c => `
+    <div class="kpi">
+      <div class="label">${c.label}</div>
+      <div class="value ${c.cls}">${c.value}</div>
+    </div>`).join('');
+})();
+
+// ---- sentiment legend + donut ----
+(function buildSentimentChart(){
+  const legend = document.getElementById('sentimentLegend');
+  legend.innerHTML = SENTIMENTS.map(s => `
+    <span><i style="background:${SENTIMENT_COLORS[s]}"></i>${s} ${pct(stats.sentiment_pct[s]||0)}</span>`).join('');
+
+  new Chart(document.getElementById('sentimentDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: SENTIMENTS,
+      datasets: [{
+        data: SENTIMENTS.map(s => stats.sentiment_counts[s] || 0),
+        backgroundColor: SENTIMENTS.map(s => SENTIMENT_COLORS[s]),
+        borderColor: '#161F2E',
+        borderWidth: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '62%',
+      plugins: { legend: { display:false },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${fmt(ctx.parsed)} tweets` } } }
+    }
+  });
+})();
+
+// ---- avg word count bar ----
+(function buildWordCountChart(){
+  new Chart(document.getElementById('wordCountBar'), {
+    type: 'bar',
+    data: {
+      labels: SENTIMENTS,
+      datasets: [{
+        data: SENTIMENTS.map(s => stats.avg_word_count_by_sentiment[s] || 0),
+        backgroundColor: SENTIMENTS.map(s => SENTIMENT_COLORS[s]),
+        borderRadius: 4,
+        maxBarThickness: 46,
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(ctx)=> `${ctx.parsed.y} avg tokens` } } },
+      scales:{
+        y:{ beginAtZero:true, grid:{color:GRID_COLOR}, ticks:{ color: TEXT_DIM } },
+        x:{ grid:{display:false}, ticks:{ color: TEXT_DIM } }
+      }
+    }
+  });
+})();
+
+// ---- heatmap table ----
+(function buildHeatmap(){
+  const legend = document.getElementById('heatmapLegend');
+  legend.innerHTML = SENTIMENTS.map(s => `<span><i style="background:${SENTIMENT_COLORS[s]}"></i>${s}</span>`).join('')
+    + `<span style="color:var(--text-faint)">cell shade = share of that brand's tweets</span>`;
+
+  const heat = stats.entity_sentiment_heatmap;
+  const thead = `<tr><th>Entity</th>${SENTIMENTS.map(s=>`<th>${s}</th>`).join('')}</tr>`;
+  function shade(color, alpha){
+    // color is hex like #39C08A -> rgba
+    const c = color.replace('#','');
+    const r = parseInt(c.substring(0,2),16), g = parseInt(c.substring(2,4),16), b = parseInt(c.substring(4,6),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  const rows = heat.entities.map((e,ri) => {
+    const cells = heat.matrix[ri].map((v,ci) => {
+      const alpha = Math.max(0.08, Math.min(0.9, v/100));
+      return `<td><span class="cell" style="background:${shade(SENTIMENT_COLORS[SENTIMENTS[ci]], alpha)}">${v.toFixed(0)}%</span></td>`;
+    }).join('');
+    return `<tr><td class="entity">${e}</td>${cells}</tr>`;
+  }).join('');
+  document.getElementById('heatmapTable').innerHTML = thead + rows;
+})();
+
+// ---- volume bar (horizontal) ----
+(function buildVolumeChart(){
+  const entries = Object.entries(stats.top_entities);
+  new Chart(document.getElementById('volumeBar'), {
+    type: 'bar',
+    data: {
+      labels: entries.map(e=>e[0]),
+      datasets: [{
+        data: entries.map(e=>e[1]),
+        backgroundColor: '#3DDBC8',
+        borderRadius: 4,
+        maxBarThickness: 18,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(ctx)=> `${fmt(ctx.parsed.x)} tweets` } } },
+      scales:{
+        x:{ beginAtZero:true, grid:{color:GRID_COLOR}, ticks:{ color: TEXT_DIM } },
+        y:{ grid:{display:false}, ticks:{ color: TEXT_DIM } }
+      }
+    }
+  });
+})();
+
+// ---- word clouds ----
+(function buildClouds(){
+  const grid = document.getElementById('cloudGrid');
+  grid.innerHTML = SENTIMENTS.map(s => {
+    const words = stats.top_words_by_sentiment[s] || [];
+    const max = Math.max(1, ...words.map(w=>w.count));
+    const min = Math.min(...words.map(w=>w.count), max);
+    const tags = words.map(w => {
+      const t = (w.count - min) / Math.max(1,(max-min));
+      const size = 12 + t*22;
+      const alpha = 0.55 + t*0.45;
+      return `<span style="font-size:${size.toFixed(0)}px;color:${SENTIMENT_COLORS[s]};opacity:${alpha.toFixed(2)}">${w.text}</span>`;
+    }).join('');
+    return `<div class="cloud-panel">
+      <div class="tag-title" style="color:${SENTIMENT_COLORS[s]}">${s}</div>
+      <div class="cloud-tags">${tags || '<span style=\"color:var(--text-faint);font-size:13px\">no data</span>'}</div>
+    </div>`;
+  }).join('');
+})();
+
+// ---- model comparison ----
+(function buildModelChart(){
+  const names = Object.keys(ml.models);
+  const metrics = ['accuracy','precision','recall','f1_score'];
+  const metricColors = ['#3DDBC8','#F2B84B','#39C08A','#7C8A99'];
+  new Chart(document.getElementById('modelBar'), {
+    type: 'bar',
+    data: {
+      labels: names,
+      datasets: metrics.map((m,i) => ({
+        label: m.replace('_',' '),
+        data: names.map(n => ml.models[n][m]),
+        backgroundColor: metricColors[i],
+        borderRadius: 4,
+        maxBarThickness: 20,
+      }))
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:true, position:'top', labels:{ boxWidth:10, color: TEXT_DIM } } },
+      scales:{
+        y:{ min:0, max:1, grid:{color:GRID_COLOR}, ticks:{ color: TEXT_DIM } },
+        x:{ grid:{display:false}, ticks:{ color: TEXT_DIM } }
+      }
+    }
+  });
+})();
+
+// ---- confusion matrix ----
+(function buildConfusionMatrix(){
+  const best = ml.models[ml.best_model];
+  document.getElementById('bestModelBadge').textContent = ml.best_model;
+  const labels = ml.labels;
+  const cm = best.confusion_matrix;
+  const max = Math.max(...cm.flat());
+  const thead = `<tr><th></th>${labels.map(l=>`<th>${l}</th>`).join('')}</tr>`;
+  const rows = cm.map((row, ri) => {
+    const cells = row.map((v, ci) => {
+      const t = v / Math.max(1,max);
+      const bg = ri===ci ? `rgba(61,219,200,${0.15+t*0.65})` : `rgba(226,96,75,${0.08+t*0.5})`;
+      return `<td class="${ri===ci?'diag':''}" style="background:${bg}">${v}</td>`;
+    }).join('');
+    return `<tr><td class="rowhead">${labels[ri]}</td>${cells}</tr>`;
+  }).join('');
+  document.getElementById('cmTable').innerHTML = thead + rows;
+})();
+</script>
+</body>
+</html>
